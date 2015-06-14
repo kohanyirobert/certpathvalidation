@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.security.KeyStore;
+import java.security.SignatureException;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
 import java.security.cert.Certificate;
@@ -49,6 +50,9 @@ public final class Main {
         Certificate subjectCertificate = certificateChain[0];
         List<Certificate> otherCertificates = Arrays.asList(certificateChain).subList(1, certificateChain.length);
         for (Certificate certificate : otherCertificates) {
+            if (isSelfSigned(certificate)) {
+                continue;
+            }
             trustAnchors.add(new TrustAnchor((X509Certificate) certificate, null));
         }
 
@@ -74,6 +78,15 @@ public final class Main {
             ks.load(is, PASSWORD);
         }
         return ks;
+    }
+
+    static boolean isSelfSigned(Certificate certificate) throws Exception {
+        try {
+            certificate.verify(certificate.getPublicKey());
+            return true;
+        } catch (SignatureException ex) {
+            return false;
+        }
     }
 
     static Certificate[] getCertificates(String pem) throws Exception {
