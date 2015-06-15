@@ -1,4 +1,3 @@
-rem export root's certificate to file
 keytool -exportcert^
  -alias root^
  -file root.pem^
